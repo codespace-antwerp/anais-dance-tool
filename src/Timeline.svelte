@@ -1,12 +1,10 @@
 <script>
   export let poseData;
   export let currentFrame;
-  export let setCurrentFrame;
   export let isPlaying;
 
   function updateCurrentFrame(e) {
     currentFrame.set(parseInt(e.target.value));
-    // setCurrentFrame(parseInt(e.target.value));
   }
 
   function togglePlay() {
