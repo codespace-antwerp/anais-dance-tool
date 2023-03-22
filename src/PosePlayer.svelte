@@ -39,9 +39,10 @@
 
   function drawFrame(frame) {
     if (!ctx) return;
-    const landmarks = poseData.frames[frame];
+    let landmarks = poseData.frames[frame];
     if (!landmarks) return;
     if (landmarks.length !== 33) return;
+
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     ctx.strokeStyle = "#47BCC9";
     ctx.lineWidth = 2;
@@ -93,26 +94,6 @@
   }
 
   $: drawFrame($currentFrame);
-
-  // $: if (videoElement) {
-  //   if ($isPlaying) {
-  //     videoElement.play();
-  //   } else {
-  //     videoElement.pause();
-  //   }
-  // }
-
-  // $: if (videoElement) {
-  //   // console.log("time");
-  //   videoElement.currentTime = $currentTime;
-  // }
-
-  //   const debouncedUpdateTime = debounce(($currentTime) => {
-  //     if (videoElement) {
-  //       videoElement.currentTime = $currentTime;
-  //     }
-  //   }, 200);
-  //   currentTime.subscribe(debouncedUpdateTime);
 </script>
 
 <canvas bind:this={canvasElement} />
