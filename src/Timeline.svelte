@@ -5,7 +5,8 @@
   export let isPlaying;
 
   function updateCurrentFrame(e) {
-    setCurrentFrame(parseInt(e.target.value));
+    currentFrame.set(parseInt(e.target.value));
+    // setCurrentFrame(parseInt(e.target.value));
   }
 
   function togglePlay() {
@@ -19,7 +20,7 @@
     min="0"
     max={poseData.frameCount}
     step="1"
-    value={currentFrame}
+    value={$currentFrame}
     on:input={updateCurrentFrame}
   />
   <button on:click={togglePlay}>

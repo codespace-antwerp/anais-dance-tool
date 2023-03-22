@@ -7,7 +7,7 @@
   let isLoading = true;
   // let isPlaying = false;
   let poseData;
-  let currentFrame = 10;
+  // let currentFrame = 10;
 
   async function loadPoseFile() {
     const response = await fetch("/pose_data.json");
@@ -16,22 +16,19 @@
     isLoading = false;
   }
 
-  function setCurrentFrame(frame) {
-    console.log(`Setting current frame to ${frame}`);
-    currentFrame = frame;
-  }
-
   loadPoseFile();
 
-  // const currentFrame = writable(0);
+  const currentFrame = writable(0);
   const isPlaying = writable(false);
   let timer;
 
   $: {
     if ($isPlaying) {
+      clearInterval(timer);
+
       timer = setInterval(() => {
-        currentFrame = currentFrame + 1;
-      }, 10000 / poseData.frameRate);
+        currentFrame.set($currentFrame + 1);
+      }, 1000 / poseData.frameRate);
       // console.log("Playing");
     } else {
       clearInterval(timer);
@@ -44,12 +41,10 @@
   {#if isLoading}
     <p>Loading...</p>
   {:else}
-    <PosePlayer {poseData} {currentFrame} {isPlaying} />
-    <Timeline {poseData} {currentFrame} {setCurrentFrame} {isPlaying} />
+    <PosePlayer {poseData} {currentFrame} />
+    <Timeline {poseData} {currentFrame} {isPlaying} />
 
-    Frame: {currentFrame}
-    Time: {frameToTime(currentFrame, poseData.frameRate)}
-    <br />
-    Is playing: {$isPlaying}
+    Frame: {$currentFrame}
+    Time: {frameToTime($currentFrame, poseData.frameRate).toFixed(2)}
   {/if}
 </main>

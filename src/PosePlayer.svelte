@@ -2,7 +2,11 @@
   import { onMount } from "svelte";
 
   const NOSE_INDEX = 0;
+  const LEFT_EYE_INDEX = 2;
+  const RIGHT_EYE_INDEX = 5;
   const LEFT_SHOULDER_INDEX = 11;
+  const MOUTH_LEFT_INDEX = 9;
+  const MOUTH_RIGHT_INDEX = 10;
   const RIGHT_SHOULDER_INDEX = 12;
   const LEFT_ELBOW_INDEX = 13;
   const RIGHT_ELBOW_INDEX = 14;
@@ -23,7 +27,6 @@
 
   export let poseData;
   export let currentFrame;
-  export let isPlaying;
   let canvasElement, ctx;
 
   onMount(() => {
@@ -31,16 +34,19 @@
     canvasElement.width = poseData.width;
     canvasElement.height = poseData.height;
     ctx = canvasElement.getContext("2d");
-    drawFrame(currentFrame);
+    drawFrame($currentFrame);
   });
 
   function drawFrame(frame) {
     if (!ctx) return;
     const landmarks = poseData.frames[frame];
-    if (landmarks.length === 0) return;
+    if (!landmarks) return;
+    if (landmarks.length !== 33) return;
+    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     ctx.strokeStyle = "#47BCC9";
     ctx.lineWidth = 2;
     ctx.beginPath();
+    drawLine(landmarks[MOUTH_LEFT_INDEX], landmarks[MOUTH_RIGHT_INDEX]);
     drawLine(landmarks[LEFT_SHOULDER_INDEX], landmarks[RIGHT_SHOULDER_INDEX]);
     drawLine(landmarks[LEFT_SHOULDER_INDEX], landmarks[LEFT_ELBOW_INDEX]);
     drawLine(landmarks[RIGHT_SHOULDER_INDEX], landmarks[RIGHT_ELBOW_INDEX]);
@@ -58,21 +64,35 @@
     drawLine(landmarks[RIGHT_HEEL_INDEX], landmarks[RIGHT_FOOT_INDEX]);
     drawLine(landmarks[LEFT_HEEL_INDEX], landmarks[LEFT_FOOT_INDEX]);
     ctx.stroke();
+
+    ctx.fillStyle = "#47BCC9";
+    ctx.beginPath();
+    drawDot(landmarks[NOSE_INDEX]);
+    drawDot(landmarks[LEFT_EYE_INDEX]);
+    drawDot(landmarks[RIGHT_EYE_INDEX]);
+    ctx.fill();
   }
 
   function drawLine(landmark1, landmark2) {
-    if (
-      landmark1.visibility >= MIN_VISIBILITY &&
-      landmark2.visibility >= MIN_VISIBILITY
-    ) {
-      let { x: x1, y: y1 } = landmark1;
-      let { x: x2, y: y2 } = landmark2;
-      ctx.moveTo(x1 * poseData.width, y1 * poseData.height);
-      ctx.lineTo(x2 * poseData.width, y2 * poseData.height);
-    }
+    // if (
+    //   landmark1.visibility < MIN_VISIBILITY ||
+    //   landmark2.visibility < MIN_VISIBILITY
+    // )
+    //   return;
+    let { x: x1, y: y1 } = landmark1;
+    let { x: x2, y: y2 } = landmark2;
+    ctx.moveTo(x1 * poseData.width, y1 * poseData.height);
+    ctx.lineTo(x2 * poseData.width, y2 * poseData.height);
   }
 
-  $: drawFrame(currentFrame);
+  function drawDot(landmark) {
+    // if (landmark.visibility < MIN_VISIBILITY) return;
+    let { x, y } = landmark;
+    ctx.moveTo(x * poseData.width, y * poseData.height);
+    ctx.arc(x * poseData.width, y * poseData.height, 3, 0, 2 * Math.PI);
+  }
+
+  $: drawFrame($currentFrame);
 
   // $: if (videoElement) {
   //   if ($isPlaying) {

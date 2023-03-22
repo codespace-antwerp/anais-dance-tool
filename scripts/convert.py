@@ -33,7 +33,12 @@ output = {
 }
 frames = []
 frame_count = 0
-with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+with mp_pose.Pose(
+    static_image_mode=False,
+    model_complexity=2,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5,
+) as pose:
     print("Open pose library")
     while cap.isOpened():
         print(".", end="", flush=True)
@@ -64,7 +69,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 print()
 
 output["frames"] = frames
-output["frame_count"] = frame_count
+output["frameCount"] = frame_count
 cap.release()
 
 with open("public/pose_data.json", "w") as outfile:
