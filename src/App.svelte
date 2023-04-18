@@ -12,6 +12,7 @@
   async function loadPoseFile() {
     const response = await fetch("/pose_data.json");
     const data = await response.json();
+    console.log(data);
     poseData = data;
     isLoading = false;
   }
