@@ -44,6 +44,8 @@
     if (landmarks.length !== 33) return;
 
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    // ctx.fillStyle = 'rgba(0, 0, 0, 0.01)'
+    // ctx.fillRect(0, 0, canvasElement.width, canvasElement.height)
     ctx.strokeStyle = "#47BCC9";
     ctx.lineWidth = 2;
     ctx.beginPath();
