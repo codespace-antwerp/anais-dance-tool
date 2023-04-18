@@ -47,23 +47,27 @@
     ctx.strokeStyle = "#47BCC9";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    drawLine(landmarks[MOUTH_LEFT_INDEX], landmarks[MOUTH_RIGHT_INDEX]);
-    drawLine(landmarks[LEFT_SHOULDER_INDEX], landmarks[RIGHT_SHOULDER_INDEX]);
-    drawLine(landmarks[LEFT_SHOULDER_INDEX], landmarks[LEFT_ELBOW_INDEX]);
-    drawLine(landmarks[RIGHT_SHOULDER_INDEX], landmarks[RIGHT_ELBOW_INDEX]);
-    drawLine(landmarks[LEFT_ELBOW_INDEX], landmarks[LEFT_WRIST_INDEX]);
-    drawLine(landmarks[RIGHT_ELBOW_INDEX], landmarks[RIGHT_WRIST_INDEX]);
-    drawLine(landmarks[RIGHT_INDEX_INDEX], landmarks[RIGHT_WRIST_INDEX]);
-    drawLine(landmarks[LEFT_INDEX_INDEX], landmarks[LEFT_WRIST_INDEX]);
-    drawLine(landmarks[RIGHT_SHOULDER_INDEX], landmarks[RIGHT_HIP_INDEX]);
-    drawLine(landmarks[LEFT_SHOULDER_INDEX], landmarks[LEFT_HIP_INDEX]);
-    drawLine(landmarks[RIGHT_HIP_INDEX], landmarks[LEFT_HIP_INDEX]);
-    drawLine(landmarks[RIGHT_HIP_INDEX], landmarks[RIGHT_KNEE_INDEX]);
-    drawLine(landmarks[LEFT_HIP_INDEX], landmarks[LEFT_KNEE_INDEX]);
-    drawLine(landmarks[LEFT_KNEE_INDEX], landmarks[LEFT_HEEL_INDEX]);
-    drawLine(landmarks[RIGHT_KNEE_INDEX], landmarks[RIGHT_HEEL_INDEX]);
-    drawLine(landmarks[RIGHT_HEEL_INDEX], landmarks[RIGHT_FOOT_INDEX]);
-    drawLine(landmarks[LEFT_HEEL_INDEX], landmarks[LEFT_FOOT_INDEX]);
+
+    const drawLineFn = drawLine;
+    // const drawLineFn = drawLineInfinity;
+
+    drawLineFn(landmarks[MOUTH_LEFT_INDEX], landmarks[MOUTH_RIGHT_INDEX]);
+    drawLineFn(landmarks[LEFT_SHOULDER_INDEX], landmarks[RIGHT_SHOULDER_INDEX]);
+    drawLineFn(landmarks[LEFT_SHOULDER_INDEX], landmarks[LEFT_ELBOW_INDEX]);
+    drawLineFn(landmarks[RIGHT_SHOULDER_INDEX], landmarks[RIGHT_ELBOW_INDEX]);
+    drawLineFn(landmarks[LEFT_ELBOW_INDEX], landmarks[LEFT_WRIST_INDEX]);
+    drawLineFn(landmarks[RIGHT_ELBOW_INDEX], landmarks[RIGHT_WRIST_INDEX]);
+    drawLineFn(landmarks[RIGHT_INDEX_INDEX], landmarks[RIGHT_WRIST_INDEX]);
+    drawLineFn(landmarks[LEFT_INDEX_INDEX], landmarks[LEFT_WRIST_INDEX]);
+    drawLineFn(landmarks[RIGHT_SHOULDER_INDEX], landmarks[RIGHT_HIP_INDEX]);
+    drawLineFn(landmarks[LEFT_SHOULDER_INDEX], landmarks[LEFT_HIP_INDEX]);
+    drawLineFn(landmarks[RIGHT_HIP_INDEX], landmarks[LEFT_HIP_INDEX]);
+    drawLineFn(landmarks[RIGHT_HIP_INDEX], landmarks[RIGHT_KNEE_INDEX]);
+    drawLineFn(landmarks[LEFT_HIP_INDEX], landmarks[LEFT_KNEE_INDEX]);
+    drawLineFn(landmarks[LEFT_KNEE_INDEX], landmarks[LEFT_HEEL_INDEX]);
+    drawLineFn(landmarks[RIGHT_KNEE_INDEX], landmarks[RIGHT_HEEL_INDEX]);
+    drawLineFn(landmarks[RIGHT_HEEL_INDEX], landmarks[RIGHT_FOOT_INDEX]);
+    drawLineFn(landmarks[LEFT_HEEL_INDEX], landmarks[LEFT_FOOT_INDEX]);
     ctx.stroke();
 
     ctx.fillStyle = "#47BCC9";
@@ -84,6 +88,30 @@
     let { x: x2, y: y2 } = landmark2;
     ctx.moveTo(x1 * poseData.width, y1 * poseData.height);
     ctx.lineTo(x2 * poseData.width, y2 * poseData.height);
+  }
+
+  function drawLineInfinity(landmark1, landmark2) {
+    // if (
+    //   landmark1.visibility < MIN_VISIBILITY ||
+    //   landmark2.visibility < MIN_VISIBILITY
+    // )
+    //   return;
+
+    const SCALE_FACTOR = 1000;
+
+    let { x: x1, y: y1 } = landmark1;
+    let { x: x2, y: y2 } = landmark2;
+
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+
+    let startX1 = x1 * poseData.width - dx * SCALE_FACTOR;
+    let startY1 = y1 * poseData.height - dy * SCALE_FACTOR;
+    let endX1 = x1 * poseData.width + dx * SCALE_FACTOR;
+    let endY1 = y1 * poseData.height + dy * SCALE_FACTOR;
+
+    ctx.moveTo(startX1, startY1);
+    ctx.lineTo(endX1, endY1);
   }
 
   function drawDot(landmark) {
