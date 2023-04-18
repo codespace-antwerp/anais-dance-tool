@@ -29,6 +29,9 @@
 
       timer = setInterval(() => {
         currentFrame.set($currentFrame + 1);
+        if ($currentFrame >= poseData.frames.length) {
+          currentFrame.set(0);
+        }
       }, 1000 / poseData.frameRate);
       // console.log("Playing");
     } else {
