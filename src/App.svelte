@@ -12,6 +12,7 @@
   async function loadPoseFile() {
     const response = await fetch("/pose_data.json");
     const data = await response.json();
+    console.log(data);
     poseData = data;
     isLoading = false;
   }
@@ -28,6 +29,9 @@
 
       timer = setInterval(() => {
         currentFrame.set($currentFrame + 1);
+        if ($currentFrame >= poseData.frames.length) {
+          currentFrame.set(0);
+        }
       }, 1000 / poseData.frameRate);
       // console.log("Playing");
     } else {
