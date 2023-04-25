@@ -2,6 +2,7 @@
   import { writable } from "svelte/store";
   import SkeletonPlayer from "./players/Skeleton.svelte";
   import InfiniteLinesPlayer from "./players/InfiniteLines.svelte";
+  import TopViewPlayer from "./players/TopView.svelte";
   import Timeline from "./Timeline.svelte";
   import { frameToTime } from "./helpers";
 
@@ -52,11 +53,14 @@
       <SkeletonPlayer {poseData} {currentFrame} {lineThickness} />
     {:else if playerMethod === "infiniteLines"} 
       <InfiniteLinesPlayer {poseData} {currentFrame} {lineThickness} />
+      {:else if playerMethod === "topView"} 
+      <TopViewPlayer {poseData} {currentFrame} {lineThickness} />
     {/if}
 
     <select bind:value={playerMethod}>
       <option value="skeleton">Skeleton</option>
       <option value="infiniteLines">Infinite Lines</option>
+      <option value="topView">Top View</option>
     </select>
 
     Thickness: <input type="range" min="1" max="100" bind:value={lineThickness}/> {lineThickness}
