@@ -27,6 +27,7 @@
 
   export let poseData;
   export let currentFrame;
+  export let lineThickness = 1;
   let canvasElement, ctx;
 
   onMount(() => {
@@ -44,14 +45,14 @@
     if (landmarks.length !== 33) return;
 
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-    // ctx.fillStyle = 'rgba(0, 0, 0, 0.01)'
-    // ctx.fillRect(0, 0, canvasElement.width, canvasElement.height)
-    ctx.strokeStyle = "#47BCC9";
-    ctx.lineWidth = 2;
+    //ctx.fillStyle = 'rgba(0, 0, 0, 0.01)'
+    //ctx.fillRect(0, 0, canvasElement.width, canvasElement.height)
+    ctx.strokeStyle = "#D0F4DF";
+    ctx.lineWidth = lineThickness;
     ctx.beginPath();
 
-    const drawLineFn = drawLine;
-    // const drawLineFn = drawLineInfinity;
+    //const drawLineFn = drawLine;
+    const drawLineFn = drawLineInfinity;
 
     drawLineFn(landmarks[MOUTH_LEFT_INDEX], landmarks[MOUTH_RIGHT_INDEX]);
     drawLineFn(landmarks[LEFT_SHOULDER_INDEX], landmarks[RIGHT_SHOULDER_INDEX]);
@@ -72,11 +73,11 @@
     drawLineFn(landmarks[LEFT_HEEL_INDEX], landmarks[LEFT_FOOT_INDEX]);
     ctx.stroke();
 
-    ctx.fillStyle = "#47BCC9";
+    ctx.fillStyle = "#D0F4DF";
     ctx.beginPath();
-    drawDot(landmarks[NOSE_INDEX]);
-    drawDot(landmarks[LEFT_EYE_INDEX]);
-    drawDot(landmarks[RIGHT_EYE_INDEX]);
+   // drawDot(landmarks[NOSE_INDEX]);
+   //drawDot(landmarks[LEFT_EYE_INDEX]);
+   //drawDot(landmarks[RIGHT_EYE_INDEX]);
     ctx.fill();
   }
 
@@ -99,7 +100,7 @@
     // )
     //   return;
 
-    const SCALE_FACTOR = 1000;
+    const SCALE_FACTOR = 100000;
 
     let { x: x1, y: y1 } = landmark1;
     let { x: x2, y: y2 } = landmark2;
@@ -123,7 +124,7 @@
     ctx.arc(x * poseData.width, y * poseData.height, 3, 0, 2 * Math.PI);
   }
 
-  $: drawFrame($currentFrame);
+  $: drawFrame($currentFrame, lineThickness);
 </script>
 
 <canvas bind:this={canvasElement} />

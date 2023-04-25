@@ -1,12 +1,15 @@
 <script>
   import { writable } from "svelte/store";
-  import PosePlayer from "./PosePlayer.svelte";
+  import SkeletonPlayer from "./players/Skeleton.svelte";
+  import InfiniteLinesPlayer from "./players/InfiniteLines.svelte";
   import Timeline from "./Timeline.svelte";
   import { frameToTime } from "./helpers";
 
   let isLoading = true;
   // let isPlaying = false;
   let poseData;
+  let playerMethod = "skeleton";
+  let lineThickness = 1;
   // let currentFrame = 10;
 
   async function loadPoseFile() {
@@ -45,7 +48,19 @@
   {#if isLoading}
     <p>Loading...</p>
   {:else}
-    <PosePlayer {poseData} {currentFrame} />
+    {#if playerMethod === "skeleton"}
+      <SkeletonPlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "infiniteLines"} 
+      <InfiniteLinesPlayer {poseData} {currentFrame} {lineThickness} />
+    {/if}
+
+    <select bind:value={playerMethod}>
+      <option value="skeleton">Skeleton</option>
+      <option value="infiniteLines">Infinite Lines</option>
+    </select>
+
+    Thickness: <input type="range" min="1" max="100" bind:value={lineThickness}/> {lineThickness}
+
     <Timeline {poseData} {currentFrame} {isPlaying} />
 
     Frame: {$currentFrame}
