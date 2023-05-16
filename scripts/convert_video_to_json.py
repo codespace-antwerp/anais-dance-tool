@@ -16,7 +16,7 @@ import sys
 import os
 
 if len(sys.argv) < 2:
-    print("Usage: python3 scripts/convert.py <video file>")
+    print("Usage: python3 scripts/convert_video_to_json.py <video file>")
     exit(1)
 
 filename = sys.argv[1]
