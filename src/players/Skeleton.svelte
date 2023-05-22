@@ -31,7 +31,6 @@
   let canvasElement, ctx;
 
   onMount(() => {
-    console.log("mounted");
     canvasElement.width = poseData.width;
     canvasElement.height = poseData.height;
     ctx = canvasElement.getContext("2d");
@@ -43,8 +42,6 @@
     let landmarks = poseData.frames[frame];
     if (!landmarks) return;
     if (landmarks.length !== 33) return;
-
-    console.log(lineThickness)
 
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     //ctx.fillStyle = 'rgba(0, 0, 0, 0.01)'
@@ -77,9 +74,9 @@
 
     ctx.fillStyle = "#D0F4DF";
     ctx.beginPath();
-   // drawDot(landmarks[NOSE_INDEX]);
-   //drawDot(landmarks[LEFT_EYE_INDEX]);
-   //drawDot(landmarks[RIGHT_EYE_INDEX]);
+    // drawDot(landmarks[NOSE_INDEX]);
+    //drawDot(landmarks[LEFT_EYE_INDEX]);
+    //drawDot(landmarks[RIGHT_EYE_INDEX]);
     ctx.fill();
   }
 
