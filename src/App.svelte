@@ -5,6 +5,7 @@
   import TopViewPlayer from "./players/TopView.svelte";
   import Timeline from "./Timeline.svelte";
   import { frameToTime } from "./helpers";
+  import { parseBvh } from "./bvh-loader";
 
   let isLoading = true;
   // let isPlaying = false;
@@ -21,7 +22,15 @@
     isLoading = false;
   }
 
+  async function loadBvhFile() {
+    const response = await fetch("/walk.bvh");
+    const data = await response.text();
+    const bvhData = parseBvh(data);
+    console.log(bvhData);
+  }
+
   loadPoseFile();
+  loadBvhFile();
 
   const currentFrame = writable(0);
   const isPlaying = writable(false);
@@ -51,9 +60,9 @@
   {:else}
     {#if playerMethod === "skeleton"}
       <SkeletonPlayer {poseData} {currentFrame} {lineThickness} />
-    {:else if playerMethod === "infiniteLines"} 
+    {:else if playerMethod === "infiniteLines"}
       <InfiniteLinesPlayer {poseData} {currentFrame} {lineThickness} />
-      {:else if playerMethod === "topView"} 
+    {:else if playerMethod === "topView"}
       <TopViewPlayer {poseData} {currentFrame} {lineThickness} />
     {/if}
 
@@ -63,7 +72,9 @@
       <option value="topView">Top View</option>
     </select>
 
-    Thickness: <input type="range" min="1" max="100" bind:value={lineThickness}/> {lineThickness}
+    Thickness:
+    <input type="range" min="1" max="100" bind:value={lineThickness} />
+    {lineThickness}
 
     <Timeline {poseData} {currentFrame} {isPlaying} />
 
