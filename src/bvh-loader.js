@@ -1,5 +1,7 @@
 // Adapted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/BVHLoader.js
 
+import { Quaternion, Vector3 } from 'three';
+
 // Returns the next non-empty line
 function _nextLine(lines) {
     let line;
@@ -40,8 +42,8 @@ function _readNode(lines, firstLine, list) {
         throw new Error('BVHLoader: OFFSET has invalid number of values.');
     }
 
-    const offset = [parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3])];
-    if (isNaN(offset[0]) || isNaN(offset[1]) || isNaN(offset[2])) {
+    const offset = new Vector3(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
+    if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z)) {
         throw new Error('BVHLoader: OFFSET has invalid values.');
     }
     node.offset = offset;
@@ -83,8 +85,14 @@ function _readFrameData(data, frameTime, bone) {
     }
 
     // Add keyframe
-    const frame = { time: frameTime, position: [], rotation: [] };
+    const frame = { time: frameTime, position: new Vector3(), rotation: new Quaternion() };
     bone.frames.push(frame);
+
+    const quat = new Quaternion();
+
+    const vx = new Vector3(1, 0, 0);
+    const vy = new Vector3(0, 1, 0);
+    const vz = new Vector3(0, 0, 1);
 
     // Quaternion magic
 
@@ -93,22 +101,25 @@ function _readFrameData(data, frameTime, bone) {
         const channel = bone.channels[i];
         switch (channel) {
             case 'Xposition':
-                frame.position[0] = parseFloat(data.shift().trim());
+                frame.position.x = parseFloat(data.shift().trim());
                 break;
             case 'Yposition':
-                frame.position[1] = parseFloat(data.shift().trim());
+                frame.position.y = parseFloat(data.shift().trim());
                 break;
             case 'Zposition':
-                frame.position[2] = parseFloat(data.shift().trim());
+                frame.position.z = parseFloat(data.shift().trim());
                 break;
             case 'Xrotation':
-                frame.rotation[0] = parseFloat(data.shift().trim()) * Math.PI / 180;
+                quat.setFromAxisAngle(vx, parseFloat(data.shift().trim()) * Math.PI / 180);
+                frame.rotation.multiply(quat);
                 break;
             case 'Yrotation':
-                frame.rotation[1] = parseFloat(data.shift().trim()) * Math.PI / 180;
+                quat.setFromAxisAngle(vy, parseFloat(data.shift().trim()) * Math.PI / 180);
+                frame.rotation.multiply(quat);
                 break;
             case 'Zrotation':
-                frame.rotation[2] = parseFloat(data.shift().trim()) * Math.PI / 180;
+                quat.setFromAxisAngle(vz, parseFloat(data.shift().trim()) * Math.PI / 180);
+                frame.rotation.multiply(quat);
                 break;
             default:
                 throw new Error('BVHLoader: Invalid channel type ' + channel);
@@ -163,12 +174,105 @@ function _readBvh(lines) {
         _readFrameData(tokens, i * frameTime, root);
     }
 
+    list.numFrames = numFrames;
+    list.frameTime = frameTime;
     return list;
 }
 
+function calculateAbsolutePositions(bones, parentBone = null) {
+    for (let bone of bones) {
+        if (bone.type === 'ENDSITE') {
+            continue;
+        }
+
+        // Get position and rotation from frame data
+        for (let frameIndex = 0; frameIndex < bone.frames.length; frameIndex++) {
+            let absolutePosition;
+            let parentRotation;
+            if (parentBone) {
+                // Start from the absolute position of the parent bone
+                const parentFrame = parentBone.frames[frameIndex];
+                absolutePosition = parentFrame.absolutePosition.clone();
+                parentRotation = parentFrame.rotation.clone();
+            } else {
+                absolutePosition = new Vector3();
+                parentRotation = new Quaternion();
+            }
+            // Add the bone offset position
+            // absolutePosition.add(bone.offset);
+            // Add the frame position and rotation
+            const frame = bone.frames[frameIndex];
+            const offset = bone.offset.clone();
+            offset.add(frame.position);
+            offset.applyQuaternion(frame.rotation);
+            absolutePosition.add(offset);
+            // Update the frame's absolute position
+            frame.absolutePosition = absolutePosition;
+        }
+
+        // Recursively calculate absolute positions for child bones
+        if (bone.children) {
+            calculateAbsolutePositions(bone.children, bone);
+        }
+    }
+}
 
 export function parseBvh(text) {
     const lines = text.split(/[\r\n]+/g);
     const bones = _readBvh(lines);
+    calculateAbsolutePositions(bones, 0);
     return bones;
+}
+
+// Match the bones to the Mediapipe pose landmarks
+// https://developers.google.com/mediapipe/solutions/vision/pose_landmarker
+export function calculatePoseData(bones) {
+    function _findBoneByName(name) {
+        return bones.find(bone => bone.name === name);
+    }
+
+    const boneList = [];
+    boneList.push(_findBoneByName('HEAD')); // 0 - nose
+    boneList.push(_findBoneByName('HEAD')); // 1 - left eye (inner)
+    boneList.push(_findBoneByName('HEAD')); // 2 - left eye
+    boneList.push(_findBoneByName('HEAD')); // 3 - left eye (outer)
+    boneList.push(_findBoneByName('HEAD')); // 4 - right eye (inner)
+    boneList.push(_findBoneByName('HEAD')); // 5 - right eye
+    boneList.push(_findBoneByName('HEAD')); // 6 - right eye (outer)
+    boneList.push(_findBoneByName('HEAD')); // 7 - left ear
+    boneList.push(_findBoneByName('HEAD')); // 8 - right ear
+    boneList.push(_findBoneByName('HEAD')); // 9 - mouth (left)
+    boneList.push(_findBoneByName('HEAD')); // 10 - mouth (right)
+    boneList.push(_findBoneByName('LEFTSHOULDER')); // 11 - left shoulder
+    boneList.push(_findBoneByName('RIGHTSHOULDER')); // 12 - right shoulder
+    boneList.push(_findBoneByName('LEFTFOREARM')); // 13 - left elbow
+    boneList.push(_findBoneByName('RIGHTFOREARM')); // 14 - right elbow
+    boneList.push(_findBoneByName('LEFTHAND')); // 15 - left wrist
+    boneList.push(_findBoneByName('RIGHTHAND')); // 16 - right wrist
+    boneList.push(_findBoneByName('LEFTHANDPINKY1')); // 17 - left pinky
+    boneList.push(_findBoneByName('RIGHTHANDPINKY1')); // 18 - right pinky
+    boneList.push(_findBoneByName('LEFTHANDINDEX1')); // 19 - left index
+    boneList.push(_findBoneByName('RIGHTHANDINDEX1')); // 20 - right index
+    boneList.push(_findBoneByName('LEFTHANDTHUMB1')); // 21 - left thumb
+    boneList.push(_findBoneByName('RIGHTHANDTHUMB1')); // 22 - right thumb
+    boneList.push(_findBoneByName('LEFTUPLEG')); // 23 - left hip
+    boneList.push(_findBoneByName('RIGHTUPLEG')); // 24 - right hip
+    boneList.push(_findBoneByName('LEFTLEG')); // 25 - left knee
+    boneList.push(_findBoneByName('RIGHTLEG')); // 26 - right knee
+    boneList.push(_findBoneByName('LEFTFOOT')); // 27 - left ankle
+    boneList.push(_findBoneByName('RIGHTFOOT')); // 28 - right ankle
+    boneList.push(_findBoneByName('LEFTFOOT')); // 29 - left heel
+    boneList.push(_findBoneByName('RIGHTFOOT')); // 30 - right heel
+    boneList.push(_findBoneByName('LEFTTOEBASE')); // 31 - left foot index
+    boneList.push(_findBoneByName('RIGHTTOEBASE')); // 32 - right foot index
+
+    const frames = [];
+    for (let frameIndex = 0; frameIndex < bones.numFrames; frameIndex++) {
+        const frame = [];
+        for (const bone of boneList) {
+            frame.push(bone.frames[frameIndex].absolutePosition.divideScalar(200).addScalar(0.1));
+        }
+        frames.push(frame);
+    }
+    return { frameRate: 1000 / bones.frameTime, frameCount: bones.numFrames, width: 640, height: 480, frames };
 }

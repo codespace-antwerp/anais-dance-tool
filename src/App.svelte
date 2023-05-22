@@ -5,7 +5,7 @@
   import TopViewPlayer from "./players/TopView.svelte";
   import Timeline from "./Timeline.svelte";
   import { frameToTime } from "./helpers";
-  import { parseBvh } from "./bvh-loader";
+  import { parseBvh, calculatePoseData } from "./bvh-loader";
 
   let isLoading = true;
   // let isPlaying = false;
@@ -27,10 +27,12 @@
     const data = await response.text();
     const bvhData = parseBvh(data);
     console.log(bvhData);
+    poseData = calculatePoseData(bvhData);
+    isLoading = false;
   }
 
   loadPoseFile();
-  loadBvhFile();
+  // loadBvhFile();
 
   const currentFrame = writable(0);
   const isPlaying = writable(false);
