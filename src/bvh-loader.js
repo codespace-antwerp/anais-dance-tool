@@ -1,6 +1,6 @@
 // Adapted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/BVHLoader.js
 
-import { Quaternion, Vector3 } from "three";
+import { Quaternion, Vector3, Matrix4 } from "three";
 
 // Returns the next non-empty line
 function _nextLine(lines) {
@@ -198,50 +198,47 @@ function _readBvh(lines) {
   return list;
 }
 
-function calculateAbsolutePositions(bones, parentBone = null) {
-  for (let bone of bones) {
-    if (bone.type === "ENDSITE") {
-      continue;
+const ONE = new Vector3(1, 1, 1);
+
+function calculateAbsoluteTransforms(bone, parentBone = null) {
+  if (bone.type === "ENDSITE") {
+    return;
+  }
+
+  for (let frameIndex = 0; frameIndex < bone.frames.length; frameIndex++) {
+    let parentTransform;
+    if (parentBone) {
+      parentTransform = parentBone.frames[frameIndex].transform.clone();
+    } else {
+      parentTransform = new Matrix4(); // Identity matrix
     }
 
-    for (let frameIndex = 0; frameIndex < bone.frames.length; frameIndex++) {
-      let absolutePosition;
-      let parentRotation;
-      if (parentBone) {
-        const parentFrame = parentBone.frames[frameIndex];
-        absolutePosition = parentFrame.absolutePosition.clone();
-        parentRotation = parentFrame.rotation.clone();
-      } else {
-        absolutePosition = new Vector3();
-        parentRotation = new Quaternion();
-      }
-      const frame = bone.frames[frameIndex];
-      const offset = bone.offset.clone();
+    const frame = bone.frames[frameIndex];
+    const boneTransform = new Matrix4();
+    const offsetTransform = new Matrix4();
 
-      // Apply the bone's rotation to its offset
-      offset.applyQuaternion(frame.rotation);
-      // Then add the parent's rotation
-      offset.applyQuaternion(parentRotation);
+    // Create a matrix from the frame's position, rotation, and scale
+    boneTransform.compose(frame.position, frame.rotation, ONE);
 
-      // Add the rotated offset to the parent's absolute position
-      absolutePosition.add(offset);
+    // Create a matrix from the bone's offset
+    offsetTransform.setPosition(bone.offset);
 
-      // Calculate the absolute rotation by multiplying the parent's rotation
-      // with the bone's rotation
-      let absoluteRotation;
-      if (parentBone) {
-        absoluteRotation = parentRotation.multiply(frame.rotation);
-      } else {
-        absoluteRotation = frame.rotation.clone();
-      }
+    // Combine the offset and bone transforms
+    boneTransform.premultiply(offsetTransform);
 
-      // Store the absolute position and rotation in the frame
-      frame.absolutePosition = absolutePosition;
-      frame.absoluteRotation = absoluteRotation;
-    }
+    // Multiply the parent's transform matrix by the bone's to get the
+    // absolute transform matrix
+    const absoluteTransform = parentTransform.multiply(boneTransform);
 
-    if (bone.children) {
-      calculateAbsolutePositions(bone.children, bone);
+    // Store the absolute transform matrix in the frame
+    frame.transform = absoluteTransform;
+    frame.absolutePosition = new Vector3();
+    frame.absolutePosition.setFromMatrixPosition(absoluteTransform);
+  }
+
+  if (bone.children) {
+    for (let childBone of bone.children) {
+      calculateAbsoluteTransforms(childBone, bone);
     }
   }
 }
@@ -249,7 +246,7 @@ function calculateAbsolutePositions(bones, parentBone = null) {
 export function parseBvh(text) {
   const lines = text.split(/[\r\n]+/g);
   const bones = _readBvh(lines);
-  calculateAbsolutePositions(bones, 0);
+  calculateAbsoluteTransforms(bones[0]);
   return bones;
 }
 
@@ -301,8 +298,8 @@ export function calculatePoseData(bones) {
     for (const bone of boneList) {
       frame.push(
         bone.frames[frameIndex].absolutePosition
-          .divideScalar(200)
-          .addScalar(0.1)
+          .divideScalar(-400)
+          .add(new Vector3(0.2, 0.8, 0))
       );
     }
     frames.push(frame);
