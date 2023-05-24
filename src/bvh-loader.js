@@ -23,10 +23,10 @@ function _readNode(lines, firstLine, list) {
   let tokens = firstLine.split(/[\s]+/);
   if (tokens[0].toUpperCase() === "END" && tokens[1].toUpperCase() === "SITE") {
     node.type = "ENDSITE";
-    node.name = "ENDSITE"; // BVH end sites have no name
+    node.name = "EndSite"; // BVH end sites have no name
   } else {
     node.type = tokens[0];
-    node.name = tokens[1].toUpperCase();
+    node.name = tokens[1];
   }
 
   if (_nextLine(lines) !== "{") {
@@ -254,43 +254,47 @@ export function parseBvh(text) {
 // https://developers.google.com/mediapipe/solutions/vision/pose_landmarker
 export function calculatePoseData(bones) {
   function _findBoneByName(name) {
-    return bones.find((bone) => bone.name === name);
+    const bone = bones.find((bone) => bone.name === name);
+    if (!bone) {
+      throw new Error(`Bone ${name} not found`);
+    }
+    return bone;
   }
 
   const boneList = [];
-  boneList.push(_findBoneByName("HEAD")); // 0 - nose
-  boneList.push(_findBoneByName("HEAD")); // 1 - left eye (inner)
-  boneList.push(_findBoneByName("HEAD")); // 2 - left eye
-  boneList.push(_findBoneByName("HEAD")); // 3 - left eye (outer)
-  boneList.push(_findBoneByName("HEAD")); // 4 - right eye (inner)
-  boneList.push(_findBoneByName("HEAD")); // 5 - right eye
-  boneList.push(_findBoneByName("HEAD")); // 6 - right eye (outer)
-  boneList.push(_findBoneByName("HEAD")); // 7 - left ear
-  boneList.push(_findBoneByName("HEAD")); // 8 - right ear
-  boneList.push(_findBoneByName("HEAD")); // 9 - mouth (left)
-  boneList.push(_findBoneByName("HEAD")); // 10 - mouth (right)
-  boneList.push(_findBoneByName("LEFTSHOULDER")); // 11 - left shoulder
-  boneList.push(_findBoneByName("RIGHTSHOULDER")); // 12 - right shoulder
-  boneList.push(_findBoneByName("LEFTFOREARM")); // 13 - left elbow
-  boneList.push(_findBoneByName("RIGHTFOREARM")); // 14 - right elbow
-  boneList.push(_findBoneByName("LEFTHAND")); // 15 - left wrist
-  boneList.push(_findBoneByName("RIGHTHAND")); // 16 - right wrist
-  boneList.push(_findBoneByName("LEFTHANDPINKY1")); // 17 - left pinky
-  boneList.push(_findBoneByName("RIGHTHANDPINKY1")); // 18 - right pinky
-  boneList.push(_findBoneByName("LEFTHANDINDEX1")); // 19 - left index
-  boneList.push(_findBoneByName("RIGHTHANDINDEX1")); // 20 - right index
-  boneList.push(_findBoneByName("LEFTHANDTHUMB1")); // 21 - left thumb
-  boneList.push(_findBoneByName("RIGHTHANDTHUMB1")); // 22 - right thumb
-  boneList.push(_findBoneByName("LEFTUPLEG")); // 23 - left hip
-  boneList.push(_findBoneByName("RIGHTUPLEG")); // 24 - right hip
-  boneList.push(_findBoneByName("LEFTLEG")); // 25 - left knee
-  boneList.push(_findBoneByName("RIGHTLEG")); // 26 - right knee
-  boneList.push(_findBoneByName("LEFTFOOT")); // 27 - left ankle
-  boneList.push(_findBoneByName("RIGHTFOOT")); // 28 - right ankle
-  boneList.push(_findBoneByName("LEFTFOOT")); // 29 - left heel
-  boneList.push(_findBoneByName("RIGHTFOOT")); // 30 - right heel
-  boneList.push(_findBoneByName("LEFTTOEBASE")); // 31 - left foot index
-  boneList.push(_findBoneByName("RIGHTTOEBASE")); // 32 - right foot index
+  boneList.push(_findBoneByName("HeadTip")); // 0 - nose
+  boneList.push(_findBoneByName("HeadTip")); // 1 - left eye (inner)
+  boneList.push(_findBoneByName("HeadTip")); // 2 - left eye
+  boneList.push(_findBoneByName("HeadTip")); // 3 - left eye (outer)
+  boneList.push(_findBoneByName("HeadTip")); // 4 - right eye (inner)
+  boneList.push(_findBoneByName("HeadTip")); // 5 - right eye
+  boneList.push(_findBoneByName("HeadTip")); // 6 - right eye (outer)
+  boneList.push(_findBoneByName("HeadTip")); // 7 - left ear
+  boneList.push(_findBoneByName("HeadTip")); // 8 - right ear
+  boneList.push(_findBoneByName("HeadTip")); // 9 - mouth (left)
+  boneList.push(_findBoneByName("HeadTip")); // 10 - mouth (right)
+  boneList.push(_findBoneByName("LeftShoulder")); // 11 - left shoulder
+  boneList.push(_findBoneByName("RightShoulder")); // 12 - right shoulder
+  boneList.push(_findBoneByName("LeftForeArm")); // 13 - left elbow
+  boneList.push(_findBoneByName("RightForeArm")); // 14 - right elbow
+  boneList.push(_findBoneByName("LeftHand")); // 15 - left wrist
+  boneList.push(_findBoneByName("RightHand")); // 16 - right wrist
+  boneList.push(_findBoneByName("LeftFinger5Tip")); // 17 - left pinky
+  boneList.push(_findBoneByName("RightFinger5Tip")); // 18 - right pinky
+  boneList.push(_findBoneByName("LeftFinger2Tip")); // 19 - left index
+  boneList.push(_findBoneByName("RightFinger2Tip")); // 20 - right index
+  boneList.push(_findBoneByName("LeftFinger1Tip")); // 21 - left thumb
+  boneList.push(_findBoneByName("RightFinger1Tip")); // 22 - right thumb
+  boneList.push(_findBoneByName("LeftThigh")); // 23 - left hip
+  boneList.push(_findBoneByName("RightThigh")); // 24 - right hip
+  boneList.push(_findBoneByName("LeftShin")); // 25 - left knee
+  boneList.push(_findBoneByName("RightShin")); // 26 - right knee
+  boneList.push(_findBoneByName("LeftFoot")); // 27 - left ankle
+  boneList.push(_findBoneByName("RightFoot")); // 28 - right ankle
+  boneList.push(_findBoneByName("LeftToe")); // 29 - left heel
+  boneList.push(_findBoneByName("RightToe")); // 30 - right heel
+  boneList.push(_findBoneByName("LeftToeTip")); // 31 - left foot index
+  boneList.push(_findBoneByName("RightToeTip")); // 32 - right foot index
 
   const frames = [];
   for (let frameIndex = 0; frameIndex < bones.numFrames; frameIndex++) {
@@ -299,13 +303,13 @@ export function calculatePoseData(bones) {
       frame.push(
         bone.frames[frameIndex].absolutePosition
           .divideScalar(-400)
-          .add(new Vector3(0.2, 0.8, 0))
+          .add(new Vector3(0.5, 0.8, 0))
       );
     }
     frames.push(frame);
   }
   return {
-    frameRate: 1000 / bones.frameTime,
+    frameRate: 1 / bones.frameTime,
     frameCount: bones.numFrames,
     width: 640,
     height: 480,
