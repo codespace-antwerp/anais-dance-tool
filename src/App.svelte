@@ -23,7 +23,11 @@
   }
 
   async function loadBvhFile() {
-    const response = await fetch("/walk.bvh");
+    isLoading = true;
+    isPlaying.set(false);
+    currentFrame.set(1);
+    const URL = `https://codespacehelp.s3.amazonaws.com/students/2022-anais-gentjes-mocap/${$fileName}`;
+    const response = await fetch(URL);
     const data = await response.text();
     const bvhData = parseBvh(data);
     console.log(bvhData);
@@ -31,12 +35,13 @@
     isLoading = false;
   }
 
-  // loadPoseFile();
-  loadBvhFile();
-
   const currentFrame = writable(1);
   const isPlaying = writable(false);
   let timer;
+  let fileName = writable("2023-05-04-walk.bvh");
+
+  // loadPoseFile();
+  loadBvhFile();
 
   $: {
     if ($isPlaying) {
@@ -54,6 +59,12 @@
       // console.log("Paused");
     }
   }
+
+  $: {
+    if ($fileName) {
+      loadBvhFile();
+    }
+  }
 </script>
 
 <main>
@@ -67,6 +78,21 @@
     {:else if playerMethod === "topView"}
       <TopViewPlayer {poseData} {currentFrame} {lineThickness} />
     {/if}
+
+    <select bind:value={$fileName}>
+      <option>2023-05-04-cycles.bvh</option>
+      <option>2023-05-04-ground-1.bvh</option>
+      <option>2023-05-04-ground-2.bvh</option>
+      <option>2023-05-04-hands.bvh</option>
+      <option>2023-05-04-improv-1-1.bvh</option>
+      <option>2023-05-04-improv-1-2.bvh</option>
+      <option>2023-05-04-improv-1-3.bvh</option>
+      <option>2023-05-04-improv-2-1.bvh</option>
+      <option>2023-05-04-improv-2-2.bvh</option>
+      <option>2023-05-04-improv-2-3.bvh</option>
+      <option>2023-05-04-ragdoll.bvh</option>
+      <option>2023-05-04-walk.bvh</option>
+    </select>
 
     <select bind:value={playerMethod}>
       <option value="skeleton">Skeleton</option>
