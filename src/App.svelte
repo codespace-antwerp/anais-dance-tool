@@ -31,10 +31,10 @@
     isLoading = false;
   }
 
-  loadPoseFile();
-  // loadBvhFile();
+  // loadPoseFile();
+  loadBvhFile();
 
-  const currentFrame = writable(0);
+  const currentFrame = writable(1);
   const isPlaying = writable(false);
   let timer;
 
