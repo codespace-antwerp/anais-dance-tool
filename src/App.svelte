@@ -3,34 +3,28 @@
   import SkeletonPlayer from "./players/Skeleton.svelte";
   import InfiniteLinesPlayer from "./players/InfiniteLines.svelte";
   import TopViewPlayer from "./players/TopView.svelte";
+  import ColorPlayer from "./players/Color.svelte";
+  import FadePlayer from "./players/Fade.svelte";
+  import GlitchPlayer from "./players/Glitch.svelte";
+  import MirrorPlayer from "./players/Mirror.svelte";
+  import RectanglePlayer from "./players/Rectangle.svelte";
+  import ShapesPlayer from "./players/Shapes.svelte";
+  import SpacemanPlayer from "./players/Spaceman.svelte";
   import Timeline from "./Timeline.svelte";
   import { frameToTime } from "./helpers";
   import { parseBvh, calculatePoseData } from "./bvh-loader";
 
   let isLoading = true;
-  // let isPlaying = false;
   let poseData;
   let playerMethod = "skeleton";
   let lineThickness = 1;
-  // let currentFrame = 10;
-
-  async function loadPoseFile() {
-    const response = await fetch("/pose_data.json");
-    const data = await response.json();
-    console.log(data);
-    poseData = data;
-    isLoading = false;
-  }
 
   async function loadBvhFile() {
     isLoading = true;
-    isPlaying.set(false);
-    currentFrame.set(1);
     const URL = `https://codespacehelp.s3.amazonaws.com/students/2022-anais-gentjes-mocap/${$fileName}`;
     const response = await fetch(URL);
     const data = await response.text();
     const bvhData = parseBvh(data);
-    console.log(bvhData);
     poseData = calculatePoseData(bvhData);
     isLoading = false;
   }
@@ -39,24 +33,54 @@
   const isPlaying = writable(false);
   let timer;
   let fileName = writable("2023-05-04-walk.bvh");
+  let playbackSpeed = writable(0);
 
-  // loadPoseFile();
-  loadBvhFile();
+  function startPlayback() {
+    clearInterval(timer);
+
+    timer = setInterval(() => {
+      let nextFrame = $currentFrame + 1;
+      if (nextFrame >= poseData.frames.length) {
+        nextFrame = 0;
+      }
+      currentFrame.set(nextFrame);
+    }, 1000 / (poseData.frameRate * calculateSpeedFactor($playbackSpeed)));
+  }
+
+  function stopPlayback() {
+    clearInterval(timer);
+  }
+
+  function calculateSpeedFactor(speed) {
+    if (speed === 0) {
+      return 1;
+    } else if (speed === 1) {
+      return 2;
+    } else if (speed === 2) {
+      return 2 * originalFrameRate;
+    } else if (speed === -1) {
+      return 0.5;
+    } else if (speed === -2) {
+      return 0.5 / originalFrameRate;
+    }
+  }
+
+  function handlePlaybackSpeedChange(event) {
+    const validValues = [0, 1, 2, -1, -2];
+    const value = parseInt(event.target.value);
+
+    if (validValues.includes(value)) {
+      playbackSpeed.set(value);
+    } else {
+      event.target.value = $playbackSpeed;
+    }
+  }
 
   $: {
     if ($isPlaying) {
-      clearInterval(timer);
-
-      timer = setInterval(() => {
-        currentFrame.set($currentFrame + 1);
-        if ($currentFrame >= poseData.frames.length) {
-          currentFrame.set(0);
-        }
-      }, 1000 / poseData.frameRate);
-      // console.log("Playing");
+      startPlayback();
     } else {
-      clearInterval(timer);
-      // console.log("Paused");
+      stopPlayback();
     }
   }
 
@@ -77,6 +101,20 @@
       <InfiniteLinesPlayer {poseData} {currentFrame} {lineThickness} />
     {:else if playerMethod === "topView"}
       <TopViewPlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "color"}
+      <ColorPlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "fade"}
+      <FadePlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "glitch"}
+      <GlitchPlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "mirror"}
+      <MirrorPlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "rectangle"}
+      <RectanglePlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "shapes"}
+      <ShapesPlayer {poseData} {currentFrame} {lineThickness} />
+    {:else if playerMethod === "spaceman"}
+      <SpacemanPlayer {poseData} {currentFrame} {lineThickness} />
     {/if}
 
     <select bind:value={$fileName}>
@@ -98,7 +136,20 @@
       <option value="skeleton">Skeleton</option>
       <option value="infiniteLines">Infinite Lines</option>
       <option value="topView">Top View</option>
+      <option value="color">Color</option>
+      <option value="fade">Fade</option>
+      <option value="glitch">Glitch</option>
+      <option value="mirror">Mirror</option>
+      <option value="rectangle">Rectangle</option>
+      <option value="shapes">Shapes</option>
+      <option value="spaceman">Spaceman</option>
     </select>
+
+    <label>
+      Playback Speed:
+      <input type="range" min="-2" max="2" step="1" bind:value={playbackSpeed} />
+      {playbackSpeed}
+    </label>
 
     Thickness:
     <input type="range" min="1" max="100" bind:value={lineThickness} />
@@ -110,3 +161,4 @@
     Time: {frameToTime($currentFrame, poseData.frameRate).toFixed(2)}
   {/if}
 </main>
+
