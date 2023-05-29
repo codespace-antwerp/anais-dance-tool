@@ -59,7 +59,7 @@
     } else if (speed === 2) {
       return 2 * originalFrameRate;
     } else if (speed === -1) {
-      return 0.5;
+      return 0.5 / originalFrameRate;
     } else if (speed === -2) {
       return 0.5 / originalFrameRate;
     }
