@@ -36,15 +36,32 @@
   let playbackSpeed = writable(0);
 
   function startPlayback() {
+    if (!poseData) return;
     clearInterval(timer);
+
+    // console.log($playbackSpeed)
+
+    let realPlaybackSpeed = 1;
+    if ($playbackSpeed === -2) {
+      realPlaybackSpeed = 0.25;
+    } else if ($playbackSpeed === -1) {
+      realPlaybackSpeed = 0.5;
+    } else if ($playbackSpeed === 0) {
+      realPlaybackSpeed = 1;
+    } else if ($playbackSpeed === 1) {
+      realPlaybackSpeed = 2;
+    } else if ($playbackSpeed === 2) {
+      realPlaybackSpeed = 4;
+
+    }
 
     timer = setInterval(() => {
       let nextFrame = $currentFrame + 1;
       if (nextFrame >= poseData.frames.length) {
-        nextFrame = 0;
+        nextFrame = 1;
       }
       currentFrame.set(nextFrame);
-    }, 1000 / (poseData.frameRate * calculateSpeedFactor($playbackSpeed)));
+    }, 1000 / (poseData.frameRate * realPlaybackSpeed));
   }
 
   function stopPlayback() {
@@ -65,16 +82,16 @@
     }
   }
 
-  function handlePlaybackSpeedChange(event) {
-    const validValues = [0, 1, 2, -1, -2];
-    const value = parseInt(event.target.value);
+  // function handlePlaybackSpeedChange(event) {
+  //   const validValues = [0, 1, 2, -1, -2];
+  //   const value = parseInt(event.target.value);
 
-    if (validValues.includes(value)) {
-      playbackSpeed.set(value);
-    } else {
-      event.target.value = $playbackSpeed;
-    }
-  }
+  //   if (validValues.includes(value)) {
+  //     playbackSpeed.set(value);
+  //   } else {
+  //     event.target.value = $playbackSpeed;
+  //   }
+  // }
 
   $: {
     if ($isPlaying) {
@@ -88,6 +105,10 @@
     if ($fileName) {
       loadBvhFile();
     }
+  }
+
+  $: {
+    startPlayback($playbackSpeed);
   }
 </script>
 
@@ -147,8 +168,8 @@
 
     <label>
       Playback Speed:
-      <input type="range" min="-2" max="2" step="1" bind:value={playbackSpeed} />
-      {playbackSpeed}
+      <input type="range" min="-2" max="2" step="1" bind:value={$playbackSpeed} />
+      {$playbackSpeed}
     </label>
 
     Thickness:
