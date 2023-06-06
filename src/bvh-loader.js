@@ -302,7 +302,7 @@ export function calculatePoseData(bones) {
     for (const bone of boneList) {
       frame.push(
         bone.frames[frameIndex].absolutePosition
-          .divideScalar(-400)
+          .divideScalar(-750)
           .add(new Vector3(0.5, 0.8, 0))
       );
     }
@@ -311,8 +311,8 @@ export function calculatePoseData(bones) {
   return {
     frameRate: 1 / bones.frameTime,
     frameCount: bones.numFrames,
-    width: 640,
-    height: 480,
+    width: 1280,
+    height: 1024,
     frames,
   };
 }
