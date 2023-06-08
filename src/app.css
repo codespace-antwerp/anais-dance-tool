@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(231, 231, 231, 0.87);
-  background-color: #2e2e2e;
+  background-color: #000000;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -41,7 +41,7 @@ h1 {
 }
 
 #app {
-  max-width: 1280px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -68,7 +68,7 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: #000000;
     background-color: #ffffff;
   }
   a:hover {

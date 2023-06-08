@@ -18,6 +18,7 @@
   let poseData;
   let playerMethod = "skeleton";
   let lineThickness = 1;
+  let audioPlayer;
 
   async function loadBvhFile() {
     isLoading = true;
@@ -52,7 +53,6 @@
       realPlaybackSpeed = 2;
     } else if ($playbackSpeed === 2) {
       realPlaybackSpeed = 4;
-
     }
 
     timer = setInterval(() => {
@@ -62,10 +62,15 @@
       }
       currentFrame.set(nextFrame);
     }, 1000 / (poseData.frameRate * realPlaybackSpeed));
+
+    audioPlayer.play();
   }
 
   function stopPlayback() {
     clearInterval(timer);
+    if (audioPlayer) {
+      audioPlayer.pause();
+    }
   }
 
   function calculateSpeedFactor(speed) {
@@ -110,6 +115,19 @@
   $: {
     startPlayback($playbackSpeed);
   }
+
+  $: {
+    console.log("playerme", playerMethod);
+    if (audioPlayer) {
+      if ($isPlaying) {
+        audioPlayer.autoplay = true;
+        audioPlayer.play();
+      } else {
+        audioPlayer.autoplay = false;
+        audioPlayer.pause();
+      }
+    }
+  }
 </script>
 
 <main>
@@ -137,6 +155,12 @@
     {:else if playerMethod === "spaceman"}
       <SpacemanPlayer {poseData} {currentFrame} {lineThickness} />
     {/if}
+
+    <audio
+      bind:this={audioPlayer}
+      src={"audio/" + playerMethod + ".mp3"}
+      loop
+    />
 
     <select bind:value={$fileName}>
       <option>2023-05-04-cycles.bvh</option>
@@ -168,7 +192,13 @@
 
     <label>
       Playback Speed:
-      <input type="range" min="-2" max="2" step="1" bind:value={$playbackSpeed} />
+      <input
+        type="range"
+        min="-2"
+        max="2"
+        step="1"
+        bind:value={$playbackSpeed}
+      />
       {$playbackSpeed}
     </label>
 
@@ -182,4 +212,3 @@
     Time: {frameToTime($currentFrame, poseData.frameRate).toFixed(2)}
   {/if}
 </main>
-
